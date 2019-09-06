@@ -1,0 +1,14 @@
+FROM maven:3-alpine AS builder
+WORKDIR /usr/src/app
+COPY pom.xml .
+COPY src src
+RUN mvn clean package -DskipTests=true -B
+
+FROM maven:3-alpine AS unit-tests
+WORKDIR /usr/src/app
+COPY --from=builder /root/.m2 /root/
+COPY --from=builder /usr/src/app .
+RUN mvn test
+
+FROM jetty:9-jre8-alpine
+COPY --from=builder /usr/src/app/target/app.war ./webapps/
