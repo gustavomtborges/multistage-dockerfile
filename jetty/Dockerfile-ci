@@ -10,5 +10,11 @@ COPY --from=builder /root/.m2 /root/
 COPY --from=builder /usr/src/app .
 RUN mvn test
 
+FROM maven:3-alpine AS integration-tests
+WORKDIR /usr/src/app
+COPY --from=builder /root/.m2 /root/
+COPY --from=builder /usr/src/app .
+RUN mvn test -Pintegration
+
 FROM jetty:9-jre8-alpine
 COPY --from=builder /usr/src/app/target/app.war ./webapps/
